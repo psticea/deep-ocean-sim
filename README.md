@@ -3,7 +3,9 @@
 A real-time WebGL2 simulation of an active black-smoker hydrothermal vent field on
 the floor of a hadal trench, explored from the ROV **EREBUS**.
 
-**One file. No build step, no server, no assets.** Open `index.html`.
+**One file. No build step, no server, no assets.** Open `index.html`, or run it here:
+
+### ▶ **[psticea.github.io/deep-ocean-sim](https://psticea.github.io/deep-ocean-sim/)**
 
 Every polygon, texture, material and shader in the scene is generated in code at
 load time. The only dependency is three.js from a CDN.
