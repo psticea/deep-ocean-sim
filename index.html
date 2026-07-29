@@ -2543,7 +2543,8 @@ const QUALITY=[
   {n:'HIGH',  scale:1.00, vol:0.50, steps:20, motes:24000, shadow:1536, bloom:5, drawMul:1.00, micro:5, detail:3}
 ];
 let qi=0, autoQ=true;    // start conservative and let the frame timer earn quality
-let distress=1.0;        // extra benthic draw-distance scale when we are still slow
+let distress=1.0;        // extra pressure valve at the lowest tier
+let distressApplied=1.0;
 const MAXMOTE=26000;
 
 let sceneRT,volRT,shadowRT,bloomRT=[],bloomTmp=[];
@@ -2945,7 +2946,7 @@ function resize(force){
   const cw=Math.max(2,canvas.clientWidth||innerWidth), ch=Math.max(2,canvas.clientHeight||innerHeight);
   const q=QUALITY[qi];
   const nw=Math.round(cw*DPR), nh=Math.round(ch*DPR);
-  const nrw=Math.max(320,Math.round(nw*q.scale)), nrh=Math.max(200,Math.round(nh*q.scale));
+  const nrw=Math.max(300,Math.round(nw*q.scale*distress)), nrh=Math.max(190,Math.round(nh*q.scale*distress));
   if(!force&&nw===W&&nh===H&&nrw===RW&&nrh===RH) return;
   W=nw;H=nh;RW=nrw;RH=nrh;
   renderer.setPixelRatio(DPR);
@@ -2987,9 +2988,8 @@ function applyQuality(){
 function cullFlora(){
   const cam=camera.position;
   const q=QUALITY[qi];
-  // last-resort valve: if we are still missing frames at the lowest tier, pull
-  // the benthic draw distance in rather than dropping the frame rate further
-  const k=q.drawMul*distress;
+  // resolution carries most of the distress; the benthos gives up only a little
+  const k=q.drawMul*(0.75+0.25*distress);
   let drawn=0;
   for(const g of floraGroups) drawn+=cullGroup(g,cam,g.radius*k,Math.round(g.budget*k));
   for(const c of shadowScene.children){
@@ -3577,9 +3577,13 @@ function loop(now){
     if(avg>0.0230&&qi>0){ qi--; applyQuality(); qCool=2.5; ftB.length=0; ftA=0; }
     else if(avg<0.0135&&qi<2){ qi++; applyQuality(); qCool=4; ftB.length=0; ftA=0; }
     else if(qi===0){
-      if(avg>0.055) distress=Math.max(0.34,distress-0.10);
+      // resolution first, content last: an empty reef is a worse failure than a soft one
+      if(avg>0.055) distress=Math.max(0.60,distress-0.09);
       else if(avg<0.028&&distress<1.0) distress=Math.min(1.0,distress+0.06);
-    } else if(distress<1.0) distress=Math.min(1.0,distress+0.10);
+      if(Math.abs(distress-distressApplied)>0.04){ distressApplied=distress; resize(true); }
+    } else if(distress<1.0){
+      distress=Math.min(1.0,distress+0.10); distressApplied=distress; resize(true);
+    }
   }
 
   simT+=dt; frameN++;

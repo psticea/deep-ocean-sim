@@ -102,7 +102,7 @@ Starts drifting. Any input takes control.
 ## Performance — read this honestly
 
 The only GPU available to me for testing was an **Intel HD Graphics 4000**, a 2012 integrated
-part. On that machine this scene runs at roughly **6–13 fps at the LOW tier**, and the numbers
+part. On that machine this scene settles at roughly **13–21 fps at the LOW tier**, and the numbers
 drift between runs in a way that looks like thermal throttling.
 
 I have **not** been able to verify the 60 fps target on modern hardware. What I did do:
@@ -117,7 +117,8 @@ I have **not** been able to verify the 60 fps target on modern hardware. What I 
 - Runtime detail uniforms (noise octaves, ripple train count) driven by the quality tier.
 
 Three quality tiers are selected automatically from a rolling frame-time average, plus a
-distress valve that pulls in benthic draw distance if the lowest tier still misses frames.
+distress valve that drops render resolution (and only slightly, benthic draw distance) if the
+lowest tier still misses frames — an empty reef is a worse failure than a soft one.
 It starts at LOW and earns its way up, so a capable GPU should climb to HIGH within seconds.
 Whether that lands at 60 fps, I genuinely don't know.
 
